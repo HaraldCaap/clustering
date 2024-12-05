@@ -277,3 +277,37 @@ for prediction in predictions:
     print("Probabilities:")
     for label, prob in prediction['probabilities'].items():
         print(f"  {label}: {prob:.4f}")
+
+# === Dataset Definition ===
+
+# Create a custom PyTorch dataset
+class TextDataset(Dataset):
+    def __init__(self, encodings, labels):
+        """
+        Initializes the dataset with encodings and labels.
+        Args:
+            encodings: Tokenized input (input IDs and attention masks).
+            labels: Binary labels for multi-label classification.
+        """
+        self.encodings = encodings
+        self.labels = labels
+
+    def __len__(self):
+        return len(self.labels)
+
+    def __getitem__(self, idx):
+        """
+        Retrieves the data point at the given index.
+        Args:
+            idx: Index of the data point.
+
+        Returns:
+            A dictionary containing input IDs, attention masks, and labels.
+        """
+        item = {key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
+        item["labels"] = torch.tensor(self.labels.iloc[idx])
+        return item
+
+# Create PyTorch datasets
+train_dataset = TextDataset(train_encodings, y_train)
+test_dataset = TextDataset(test_encodings, y_test)
